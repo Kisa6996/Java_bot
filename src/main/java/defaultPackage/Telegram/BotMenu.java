@@ -1,4 +1,4 @@
-package Telegram;
+package defaultPackage.Telegram;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -14,7 +14,11 @@ import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 public class BotMenu extends TelegramLongPollingBot {
 
     private final String username = "@remembering_007_bot"; // имя бота
-    private final String token = "6344773460:AAGlQbXDzHijBYpnMHuExjm9D90PATWr8aU"; // token
+
+    public BotMenu()
+    {
+        super("6344773460:AAGlQbXDzHijBYpnMHuExjm9D90PATWr8aU");
+    }
 
     @Override
     public void onUpdateReceived(Update update) {
@@ -77,11 +81,6 @@ public class BotMenu extends TelegramLongPollingBot {
     @Override
     public String getBotUsername() {
         return username;
-    }
-
-    @Override
-    public String getBotToken() {
-        return token;
     }
 
 }

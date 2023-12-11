@@ -1,0 +1,12 @@
+
+services:
+  postgres:
+    image: postgres:16.1
+    container_name: my-postgres
+    environment:
+      POSTGRES_DB: BotDatabase
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
+      POSTGRES_LOG_STATEMENTS: all # Устанавливаем вывод всех SQL-запросов в консоль
+    ports:
+      - "5432:5432"
