@@ -3,6 +3,7 @@ package defaultPackage.Infrastructure;
 import defaultPackage.Core.User;
 import defaultPackage.Infrastructure.Objects.DbParam;
 
+import java.sql.ResultSet;
 import java.util.ArrayList;
 
 // класс для работы с таблицей пользователей
@@ -30,4 +31,41 @@ public class UserRepository {
         _dao.ExecuteUpdate("INSERT INTO Users (id, chatId, username) VALUES (?, ?, ?)", array);
 
     }
+
+    public boolean userExists(long userId) {
+        try {
+            String query = "SELECT COUNT(*) FROM Users WHERE chatId = ?";
+
+            // Преобразуем userId в строку
+            String userIdAsString = String.valueOf(userId);
+
+            // Создаем объект параметра для передачи в запрос
+            var param1 = new DbParam();
+            param1.key = 1;
+            param1.param = userIdAsString;
+
+            // Создаем список параметров и добавляем в него параметры
+            var dbParams = new ArrayList<DbParam>();
+            dbParams.add(param1);
+
+            // Выполняем запрос с использованием параметров
+            ResultSet resultSet = _dao.ExecuteQuery(query, dbParams);
+
+            // Извлекаем результат из результирующего набора
+            if (resultSet != null && resultSet.next()) {
+                int count = resultSet.getInt(1);
+
+                // Проверяем, что количество больше нуля и возвращаем true
+                return count > 0;
+            }
+
+            // Если результат не был извлечен или пуст, возвращаем false
+            return false;
+        } catch (Exception e) {
+            System.out.println("Ошибка при проверке существования пользователя: " + e.getMessage());
+            return false;
+        }
+    }
+
+
 }
