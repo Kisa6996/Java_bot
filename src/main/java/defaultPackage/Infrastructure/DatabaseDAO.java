@@ -27,19 +27,24 @@ public class DatabaseDAO {
     }
 
     // Вызов sql-запроса для получения данных
-    public ResultSet ExecuteQuery(String sql)
-    {
-        try{
+    public ResultSet ExecuteQuery(String sql, ArrayList<DbParam> params) {
+        try {
             Connection connection = DriverManager.getConnection(url, databaseConnectionProperties);
-            Statement statement = connection.createStatement();
-            return statement.executeQuery(sql);
-        }
-        catch (Exception ex)
-        {
-            System.out.println("Ошибка при выполнении запроса: "+sql + ";\n Текст ошибки -" + ex.getMessage());
+            PreparedStatement preparedStatement = connection.prepareStatement(sql);
+
+            if (params != null) {
+                for (DbParam param : params) {
+                    preparedStatement.setObject(param.key, param.param);
+                }
+            }
+
+            return preparedStatement.executeQuery();
+        } catch (Exception ex) {
+            System.out.println("Ошибка при выполнении запроса: " + sql + ";\n Текст ошибки -" + ex.getMessage());
             return null;
         }
     }
+
 
     // Вызов sql-запроса для изменения данных
     public void ExecuteUpdate(String sql, ArrayList<DbParam> dbParams)

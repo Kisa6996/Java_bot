@@ -24,14 +24,10 @@ public class Main {
         props.setProperty("password", "password");
         props.setProperty("ssl", "false");
         var database = new DatabaseDAO(url, props);
-        var repo = new UserRepository(database);
+        var userRepo = new UserRepository(database);
 
-        var user = new User();
-        user.id = UUID.randomUUID();
-        user.chatId = "asdasd";
-        user.username = "coolBoy20014";
-        repo.Add(user);
         TelegramBotsApi botsApi = new TelegramBotsApi(DefaultBotSession.class);
-        botsApi.registerBot(new BotMenu());
+
+        botsApi.registerBot(new BotMenu(userRepo));
     }
 }
