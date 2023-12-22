@@ -1,5 +1,10 @@
 package defaultPackage.Telegram;
 
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+import java.sql.Timestamp;
+
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.util.ArrayList;
@@ -9,6 +14,8 @@ import java.util.UUID;
 
 import defaultPackage.Infrastructure.DatabaseDAO;
 import defaultPackage.Infrastructure.UserRepository;
+import defaultPackage.Infrastructure.NotificationRepository;
+import org.telegram.telegrambots.meta.api.objects.Message;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Update;
@@ -18,16 +25,17 @@ import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.Keyboard
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 import org.telegram.telegrambots.meta.api.objects.User;
 
-
 public class BotMenu extends TelegramLongPollingBot {
 
     private final String username = "@remembering_007_bot"; // имя бота
-    private final UserRepository userRepo;
+    private final UserRepository userRepo;    
+    private final NotificationRepository notificatuonRepo;
 
-    public BotMenu(UserRepository userRepo)
-    {
+
+    public BotMenu(UserRepository userRepo, NotificationRepository notificatuonRepo) {
         super("6344773460:AAGlQbXDzHijBYpnMHuExjm9D90PATWr8aU");
         this.userRepo = userRepo;
+        this.notificatuonRepo = notificatuonRepo;
     }
 
     @Override
@@ -39,7 +47,8 @@ public class BotMenu extends TelegramLongPollingBot {
             // Добавляем пользователя в бд, если его там нет
             if (!userRepo.userExists(chatId)) {
 
-                sendTextMessage(chatId, "Это бот-напоминалка🔔. Ниже можно ознакомиться с нашим прайс-листом:\n ✅1 напоминание - 300р. \n ✅2 напоминания 500р. \n ✅3 напоминания - 700р. \n  ✅✅✅✅✅Безлимит - 1 касарб.✅✅✅✅✅ \n Номер киви: 89172498712 ");
+                sendTextMessage(chatId,
+                        "Это бот-напоминалка🔔. Ниже можно ознакомиться с нашим прайс-листом:\n ✅1 напоминание - 300р. \n ✅2 напоминания 500р. \n ✅3 напоминания - 700р. \n  ✅✅✅✅✅Безлимит - 1 касарь.✅✅✅✅✅ \n Номер киви: 89172498712 ");
                 var user = new defaultPackage.Core.User();
                 user.username = username;
                 user.id = UUID.randomUUID();
@@ -47,17 +56,41 @@ public class BotMenu extends TelegramLongPollingBot {
 
                 userRepo.Add(user);
             }
+            // Считываем сообщение
+            Message message = update.getMessage();
+            String messageText = message .getText();
 
-            String messageText = update.getMessage().getText();
 
-            //Buttons(chatId);
+            // Регулярка на "- "
+            String regex = "^-\\s";
+            Pattern pattern = Pattern.compile(regex);
+            Matcher matcher = pattern.matcher(messageText);
+
             if (messageText.toLowerCase().contains("привет")) {
-                    String greetingMessage = String.format("Здрав, %s!", username);
-                    sendTextMessage(chatId, greetingMessage);
+                String greetingMessage = String.format("Здрав, %s! ", username);
+                sendTextMessage(chatId, greetingMessage);
+            } else if (matcher.find()) {
+                messageText = messageText.substring(2);
+                long messageTime = message .getDate();
+                String greetingMessage = String.format("Ваше напоминание успешно записанно");
+                sendTextMessage(chatId, greetingMessage);
+                // System.out.println(messageText);
+                // System.out.println(messageTime);
 
-            } else if (messageText.toLowerCase().contains("дела")) {
-                sendTextMessage(chatId, "Хорошо, спасибо! А у вас?");
+                var notification = new defaultPackage.Core.Notification();
+                notification.id = UUID.randomUUID();
+                notification.title = messageText;
+                notification.notifyDateTime = new Timestamp(messageTime * 1000);
+                notification.userId = userRepo.getId(chatId);
+                notificatuonRepo.Add(notification);
+
+
+            } else {
+                String greetingMessage = String.format(
+                        "Это бот-напоминалка🔔\n Для создания уведомления нужно в начале текста написать '- '\n Например: '- Сходить на пары'");
+                sendTextMessage(chatId, greetingMessage);
             }
+
         }
     }
 
@@ -72,36 +105,7 @@ public class BotMenu extends TelegramLongPollingBot {
             e.printStackTrace();
         }
     }
-
-    // Компонент кнопки
-    private void Buttons(long chatId) {
-        SendMessage message = new SendMessage();
-        message.setChatId(chatId);
-        ReplyKeyboardMarkup keyboardMarkup = new ReplyKeyboardMarkup();
-        keyboardMarkup.setResizeKeyboard(true);
-
-        List<KeyboardRow> keyboard = new ArrayList<>();
-        KeyboardRow row1 = new KeyboardRow();
-        row1.add(new KeyboardButton("Команда 1"));
-        row1.add(new KeyboardButton("Команда 2"));
-
-        KeyboardRow row2 = new KeyboardRow();
-        row2.add(new KeyboardButton("Команда 3"));
-        row2.add(new KeyboardButton("Команда 4"));
-
-        keyboard.add(row1);
-        keyboard.add(row2);
-
-        keyboardMarkup.setKeyboard(keyboard);
-        message.setReplyMarkup(keyboardMarkup);
-
-        try {
-            execute(message);
-        } catch (TelegramApiException e) {
-            e.printStackTrace();
-        }
-    }
-
+    
     @Override
     public String getBotUsername() {
         return username;

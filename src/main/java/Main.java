@@ -6,6 +6,7 @@ import java.util.UUID;
 import defaultPackage.Core.Notification;
 import defaultPackage.Core.User;
 import defaultPackage.Infrastructure.DatabaseDAO;
+import defaultPackage.Infrastructure.NotificationRepository;
 import defaultPackage.Infrastructure.UserRepository;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
@@ -25,9 +26,10 @@ public class Main {
         props.setProperty("ssl", "false");
         var database = new DatabaseDAO(url, props);
         var userRepo = new UserRepository(database);
+        var notificatuonRepo = new NotificationRepository(database);
 
         TelegramBotsApi botsApi = new TelegramBotsApi(DefaultBotSession.class);
 
-        botsApi.registerBot(new BotMenu(userRepo));
+        botsApi.registerBot(new BotMenu(userRepo, notificatuonRepo));
     }
 }

@@ -5,6 +5,7 @@ import defaultPackage.Infrastructure.Objects.DbParam;
 
 import java.sql.ResultSet;
 import java.util.ArrayList;
+import java.util.UUID;
 
 // класс для работы с таблицей пользователей
 public class UserRepository {
@@ -30,6 +31,34 @@ public class UserRepository {
         // для каждой переменной '?' в запросе нужно создать собственный параметр, в определенном порядке, начиная с 1.
         _dao.ExecuteUpdate("INSERT INTO Users (id, chatId, username) VALUES (?, ?, ?)", array);
 
+    }
+    public UUID getId(long chatId){
+        try{
+            String query = "SELECT id FROM public.users WHERE chatid = ?";
+            String userIdAsString = String.valueOf(chatId);
+
+            var param1 = new DbParam();
+            param1.key = 1;
+            param1.param = userIdAsString;
+
+            var dbParams = new ArrayList<DbParam>();
+            dbParams.add(param1);
+
+            ResultSet resultSet = _dao.ExecuteQuery(query, dbParams);
+            if (resultSet.next()) {
+                // Если есть результат, достаем значение id из результата
+                UUID userId = (UUID) resultSet.getObject("id");
+                // Вернуть найденное значение id
+                return userId;
+            } else {
+                // Возвращаем null или что-то другое, чтобы показать, что значение id не найдено
+                return null;
+            }
+
+        }catch (Exception e) {
+            System.out.println("Ошибка при проверке существования пользователя: " + e.getMessage());
+            return null;
+        }
     }
 
     public boolean userExists(long userId) {
