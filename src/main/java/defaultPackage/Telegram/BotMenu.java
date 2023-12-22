@@ -28,9 +28,8 @@ import org.telegram.telegrambots.meta.api.objects.User;
 public class BotMenu extends TelegramLongPollingBot {
 
     private final String username = "@remembering_007_bot"; // имя бота
-    private final UserRepository userRepo;    
+    private final UserRepository userRepo;
     private final NotificationRepository notificatuonRepo;
-
 
     public BotMenu(UserRepository userRepo, NotificationRepository notificatuonRepo) {
         super("6344773460:AAGlQbXDzHijBYpnMHuExjm9D90PATWr8aU");
@@ -58,24 +57,25 @@ public class BotMenu extends TelegramLongPollingBot {
             }
             // Считываем сообщение
             Message message = update.getMessage();
-            String messageText = message .getText();
-
+            String messageText = message.getText();
 
             // Регулярка на "- "
             String regex = "^-\\s";
             Pattern pattern = Pattern.compile(regex);
             Matcher matcher = pattern.matcher(messageText);
-
+            // if (messageText.toLowerCase().contains("список")) {
+            // System.out.println(1);
+            // List<String> arr = notificatuonRepo.getList(chatId);
+            // System.out.println(arr);
+            // }
             if (messageText.toLowerCase().contains("привет")) {
                 String greetingMessage = String.format("Здрав, %s! ", username);
                 sendTextMessage(chatId, greetingMessage);
             } else if (matcher.find()) {
                 messageText = messageText.substring(2);
-                long messageTime = message .getDate();
+                long messageTime = message.getDate();
                 String greetingMessage = String.format("Ваше напоминание успешно записанно");
                 sendTextMessage(chatId, greetingMessage);
-                // System.out.println(messageText);
-                // System.out.println(messageTime);
 
                 var notification = new defaultPackage.Core.Notification();
                 notification.id = UUID.randomUUID();
@@ -84,6 +84,14 @@ public class BotMenu extends TelegramLongPollingBot {
                 notification.userId = userRepo.getId(chatId);
                 notificatuonRepo.Add(notification);
 
+            } else if (messageText.toLowerCase().contains("список")) {
+                List<String> arr = notificatuonRepo.getList(chatId);
+                System.out.println(arr);
+
+                for (int i = 0; i < arr.size(); i++) {
+                    String greetingMessage = String.format(i+1+ ". " + arr.get(i));
+                    sendTextMessage(chatId, greetingMessage);
+                }
 
             } else {
                 String greetingMessage = String.format(
@@ -105,7 +113,7 @@ public class BotMenu extends TelegramLongPollingBot {
             e.printStackTrace();
         }
     }
-    
+
     @Override
     public String getBotUsername() {
         return username;
